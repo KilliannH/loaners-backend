@@ -1,0 +1,12 @@
+Loaners
+
+A social app to connect people.
+
+Stack : 
+Node.js + Express
+MongoDB + Mongoose
+jsonwebtoken (auth)
+bcrypt (hashing)
+Socket.io (chat)
+dotenv (config)
+CORS, helmet, morgan
