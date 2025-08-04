@@ -1,8 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { createLocation } = require('../controllers/location.controller');
-const { authMiddleware } = require('../middleware/auth.middleware');
+const {
+  createLocation,
+  searchLocations
+} = require('../controllers/location.controller');
 
-router.post('/', authMiddleware, createLocation);
+router.post('/', createLocation);
+router.get('/', searchLocations);
 
 module.exports = router;

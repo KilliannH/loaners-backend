@@ -5,6 +5,6 @@ const { authMiddleware } = require('../middleware/auth.middleware');
 const { getNearbyEvents } = require('../controllers/event.controller');
 
 router.post('/', authMiddleware, createEvent);
-router.get('/nearby', getNearbyEvents);
+router.get('/nearby', authMiddleware, getNearbyEvents);
 
 module.exports = router;
