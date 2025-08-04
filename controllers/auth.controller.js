@@ -44,7 +44,7 @@ exports.login = async (req, res) => {
     // await user.save();
 
     // 🔁 Renvoyer les deux tokens
-    res.json({ token, refreshToken });
+    res.json({ user, token, refreshToken });
 
   } catch (err) {
     console.error(err);

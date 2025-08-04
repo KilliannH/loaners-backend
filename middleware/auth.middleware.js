@@ -14,6 +14,6 @@ exports.authMiddleware = (req, res, next) => {
     req.user = { id: decoded.userId };
     next();
   } catch (err) {
-    return res.status(403).json({ error: "Invalid token" });
+    return res.status(401).json({ error: "Invalid token" });
   }
 };
