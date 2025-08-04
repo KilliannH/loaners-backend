@@ -23,7 +23,7 @@ exports.createEvent = async (req, res) => {
 
 exports.getNearbyEvents = async (req, res) => {
     try {
-        const { lat, lng, radius = 5 } = req.query; // radius en km
+        const { lat, lng, radius = 10 } = req.query; // radius en km
 
         if (!lat || !lng) {
             return res.status(400).json({ message: 'Missing coordinates' });

@@ -14,7 +14,12 @@ exports.createLocation = async (req, res) => {
       return res.status(200).json(existing); // évite la duplication
     }
 
-    const location = await Location.create({ name, address, coordinates });
+    const geoCoordinates = {
+  type: "Point",
+  coordinates: [coordinates.lng, coordinates.lat], // ⚠️ [lng, lat]
+};
+
+const location = await Location.create({ name, address, coordinates: geoCoordinates });
     res.status(201).json(location);
   } catch (err) {
     console.error('[createLocation] error:', err);
