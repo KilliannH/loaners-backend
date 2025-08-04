@@ -1,4 +1,5 @@
 const Event = require('../models/Event');
+const Chat = require('../models/Chat');
 const Location = require('../models/Location');
 
 exports.createEvent = async (req, res) => {
@@ -87,16 +88,30 @@ exports.joinEvent = async (req, res) => {
   try {
     const event = await Event.findById(req.params.id);
 
-    if (!event) return res.status(404).json({ error: 'Événement introuvable' });
+    if (!event) return res.status(404).json({ error: "Événement introuvable" });
 
-    if (!event.attendees.includes(req.user.id)) {
-      event.attendees.push(req.user.id);
-      await event.save();
+    // Si déjà inscrit
+    if (event.attendees.includes(req.user.id)) {
+      return res.status(200).json({ message: "Déjà inscrit" });
     }
 
-    res.json({ success: true, attendees: event.attendees });
+    // Ajout du participant
+    event.attendees.push(req.user.id);
+    await event.save();
+
+    // 🔁 Vérifie nombre de participants
+    if (event.attendees.length >= 2) {
+      const existingChat = await Chat.findOne({ eventId: event._id });
+
+      if (!existingChat) {
+        await Chat.create({ eventId: event._id });
+        console.log("✅ Room de chat créée pour l'événement :", event._id);
+      }
+    }
+
+    res.status(200).json({ message: "Inscription réussie" });
   } catch (err) {
-    console.error("[joinEvent] error:", err);
-    res.status(500).json({ error: 'Erreur serveur' });
+    console.error("Erreur joinEvent:", err);
+    res.status(500).json({ error: "Erreur serveur" });
   }
 };

@@ -6,5 +6,6 @@ router.use('/auth', require('./auth.routes'));
 router.use('/users', require('./user.routes'));
 router.use('/locations', require('./location.routes'));
 router.use('/events', require('./event.routes'));
+router.use('/chat', require('./chat.routes'));
 
 module.exports = router;
