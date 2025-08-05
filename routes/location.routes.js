@@ -4,8 +4,9 @@ const {
   createLocation,
   searchLocations
 } = require('../controllers/location.controller');
+const { authMiddleware } = require('../middleware/auth.middleware');
 
-router.post('/', createLocation);
-router.get('/', searchLocations);
+router.post('/', authMiddleware, createLocation);
+router.get('/', authMiddleware, searchLocations);
 
 module.exports = router;

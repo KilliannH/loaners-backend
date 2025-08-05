@@ -1,5 +1,7 @@
 const Chat = require("./models/Chat");
 const User = require("./models/User");
+const Notification = require("./models/Notification");
+const Event = require("./models/Event");
 
 function setupSocket(io) {
     const connectedUsers = new Map();
@@ -47,11 +49,26 @@ function setupSocket(io) {
                     sender: { _id: sender, username: senderUser?.username || "Inconnu" },
                 });
 
-                const event = await require("./models/Event").findById(eventId).populate("attendees", "_id");
+                const event = await Event.findById(eventId).populate("attendees", "_id");
                 const attendeeIds = event.attendees.map((u) => u._id.toString());
 
+                if (connectedUsers.size === 0) {
+                    console.log("⚠️ Aucun user connecté identifié !");
+                }
                 for (const [socketId, userId] of connectedUsers.entries()) {
                     if (attendeeIds.includes(userId) && userId !== sender.toString()) {
+                        console.log(`🔔 Notif à envoyer à user ${userId}`);
+
+                        await Notification.create({
+                            user: userId,
+                            event: eventId,
+                            content: text,
+                            type: "message"
+                        });
+
+                        console.log(`💾 Notif DB créée pour ${userId}`);
+
+                        // 🔔 Envoie realtime
                         io.to(socketId).emit("message:notification", {
                             eventId,
                             from: senderUser?.username || "Inconnu",

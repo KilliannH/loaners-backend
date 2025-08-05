@@ -7,5 +7,6 @@ router.use('/users', require('./user.routes'));
 router.use('/locations', require('./location.routes'));
 router.use('/events', require('./event.routes'));
 router.use('/chat', require('./chat.routes'));
+router.use("/notifications", require("./notification.routes"));
 
 module.exports = router;
