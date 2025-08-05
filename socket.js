@@ -52,6 +52,12 @@ function setupSocket(io) {
                 const event = await Event.findById(eventId).populate("attendees", "_id");
                 const attendeeIds = event.attendees.map((u) => u._id.toString());
 
+                // ❌ Si l’utilisateur n’est pas dans la liste des participants : refuser
+                if (!attendeeIds.includes(sender.toString())) {
+                    console.log(`⛔️ Refusé : user ${sender} tente d’écrire sans être inscrit à l’event ${eventId}`);
+                    return;
+                }
+
                 if (connectedUsers.size === 0) {
                     console.log("⚠️ Aucun user connecté identifié !");
                 }
