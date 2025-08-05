@@ -5,18 +5,15 @@ exports.getChatByEvent = async (req, res) => {
   const { eventId } = req.params;
 
   try {
-    const chat = await Chat.findOne({ eventId })
-      .populate('messages.sender', 'username avatarUrl') // peupler les infos de l’expéditeur
-      .lean();
+    const chat = await Chat.findOne({ eventId: eventId })
+      .populate("messages.sender", "username");
 
-    if (!chat) {
-      return res.json({ messages: [] }); // aucun message encore
-    }
+    if (!chat) return res.json({ messages: [] });
 
     res.json({ messages: chat.messages });
   } catch (err) {
-    console.error('[getChatByEvent] error:', err);
-    res.status(500).json({ error: 'Erreur serveur lors du chargement du chat.' });
+    console.error("Erreur get chat:", err);
+    res.status(500).json({ error: "Erreur serveur" });
   }
 };
 

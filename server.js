@@ -15,7 +15,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "*", // ⚠️ à restreindre en prod
+    origin: "http://localhost:5173", // ⚠️ à restreindre en prod
     methods: ["GET", "POST"],
   },
 });

@@ -18,42 +18,40 @@ function setupSocket(io) {
         });
 
         // Envoi d’un message
-        socket.on("message:send", async ({ eventId, text, sender }) => {
+        socket.on('message:send', async ({ eventId, text, sender }) => {
             try {
-                const user = await User.findById(sender).select("_id username");
+                const message = {
+                    sender,
+                    text,
+                    sentAt: new Date(),
+                };
 
-                if (!user || !eventId || !text.trim()) return;
+                // 🔁 Trouve ou crée la room
+                let chat = await Chat.findOne({ eventId });
+                if (!chat) {
+                    chat = await Chat.create({ eventId, messages: [message] });
+                } else {
+                    chat.messages.push(message);
+                    await chat.save();
+                }
 
-                const chat = await Chat.findOneAndUpdate(
-                    { eventId },
-                    {
-                        $push: {
-                            messages: {
-                                sender: user._id,
-                                text,
-                                sentAt: new Date(),
-                            },
-                        },
-                    },
-                    { upsert: true, new: true }
-                ).populate("messages.sender", "username");
+                // 🔍 Ajoute infos utilisateur
+                const senderUser = await User.findById(sender).select("username");
 
-                const newMessage = chat.messages[chat.messages.length - 1];
-
+                // ✉️ Renvoie le message avec user enrichi à tous les clients
                 io.to(eventId).emit("message:new", {
-                    sender: { _id: user._id, username: user.username },
-                    text: newMessage.text,
-                    sentAt: newMessage.sentAt,
+                    ...message,
+                    sender: { _id: sender, username: senderUser?.username || "Inconnu" },
                 });
 
-                // 💡 Envoie une notification à tous sauf l’émetteur
+                // 🔔 Notif pour les autres rooms
                 socket.to(eventId).emit("message:notification", {
                     eventId,
-                    from: user.username,
-                    text: newMessage.text,
+                    from: senderUser?.username || "Inconnu",
+                    text,
                 });
             } catch (err) {
-                console.error("❌ Erreur message:send", err);
+                console.error("Erreur message:send :", err);
             }
         });
 
