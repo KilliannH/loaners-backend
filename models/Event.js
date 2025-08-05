@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 
 const eventSchema = new mongoose.Schema({
-  name:        { type: String, required: true },
-  description: { type: String },
-  type:        { type: String, enum: ['concert', 'expo', 'spectacle', 'autre'], required: true },
+  name:        { type: String, required: true, maxlength: 100 },
+  description: { type: String, maxlength: 300 },
+  type:        { type: String, enum: ['concert', 'expo', 'spectacle', 'festival', 'soiree_a_theme', 'autre'], required: true },
   date:        { type: Date, required: true },
   owner:       { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   location:    { type: mongoose.Schema.Types.ObjectId, ref: 'Location', required: true },
