@@ -2,8 +2,14 @@ const Chat = require("./models/Chat");
 const User = require("./models/User");
 
 function setupSocket(io) {
+    const connectedUsers = new Map();
     io.on("connection", (socket) => {
         console.log("🟢 Nouveau client connecté :", socket.id);
+
+        socket.on("identify", (userId) => {
+            connectedUsers.set(socket.id, userId);
+            console.log(`✅ Socket ${socket.id} identifié comme user ${userId}`);
+        });
 
         // Rejoindre une salle par eventId
         socket.on("join", (eventId) => {
@@ -26,7 +32,6 @@ function setupSocket(io) {
                     sentAt: new Date(),
                 };
 
-                // 🔁 Trouve ou crée la room
                 let chat = await Chat.findOne({ eventId });
                 if (!chat) {
                     chat = await Chat.create({ eventId, messages: [message] });
@@ -35,27 +40,32 @@ function setupSocket(io) {
                     await chat.save();
                 }
 
-                // 🔍 Ajoute infos utilisateur
                 const senderUser = await User.findById(sender).select("username");
 
-                // ✉️ Renvoie le message avec user enrichi à tous les clients
                 io.to(eventId).emit("message:new", {
                     ...message,
                     sender: { _id: sender, username: senderUser?.username || "Inconnu" },
                 });
 
-                // 🔔 Notif pour les autres rooms
-                socket.to(eventId).emit("message:notification", {
-                    eventId,
-                    from: senderUser?.username || "Inconnu",
-                    text,
-                });
+                const event = await require("./models/Event").findById(eventId).populate("attendees", "_id");
+                const attendeeIds = event.attendees.map((u) => u._id.toString());
+
+                for (const [socketId, userId] of connectedUsers.entries()) {
+                    if (attendeeIds.includes(userId) && userId !== sender.toString()) {
+                        io.to(socketId).emit("message:notification", {
+                            eventId,
+                            from: senderUser?.username || "Inconnu",
+                            text,
+                        });
+                    }
+                }
             } catch (err) {
-                console.error("Erreur message:send :", err);
+                console.error("❌ Erreur message:send :", err);
             }
         });
 
         socket.on("disconnect", () => {
+            connectedUsers.delete(socket.id);
             console.log("🔴 Client déconnecté :", socket.id);
         });
     });
