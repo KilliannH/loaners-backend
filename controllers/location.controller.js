@@ -5,25 +5,25 @@ exports.createLocation = async (req, res) => {
     const { name, address, coordinates } = req.body;
 
     if (!name || !address || !coordinates?.lat || !coordinates?.lng) {
-      return res.status(400).json({ error: 'Tous les champs sont requis.' });
+      return res.status(400).json({ error: "Tous les champs sont requis." });
     }
 
-    // Vérifie si une location avec même nom + adresse existe déjà
     const existing = await Location.findOne({ name, address });
-    if (existing) {
-      return res.status(200).json(existing); // évite la duplication
-    }
+    if (existing) return res.status(200).json(existing);
 
-    const geoCoordinates = {
-  type: "Point",
-  coordinates: [coordinates.lng, coordinates.lat], // ⚠️ [lng, lat]
-};
+    const location = await Location.create({
+      name,
+      address,
+      coordinates: {
+        type: "Point",
+        coordinates: [coordinates.lng, coordinates.lat], // bien sous [lng, lat]
+      },
+    });
 
-const location = await Location.create({ name, address, coordinates: geoCoordinates });
     res.status(201).json(location);
   } catch (err) {
-    console.error('[createLocation] error:', err);
-    res.status(500).json({ error: 'Erreur serveur.' });
+    console.error("[createLocation] error:", err);
+    res.status(500).json({ error: "Erreur serveur." });
   }
 };
 
