@@ -156,3 +156,64 @@ exports.getMyInvolvedEvents = async (req, res) => {
     res.status(500).json({ error: "Erreur serveur" });
   }
 };
+
+exports.updateEvent = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, description, type, date } = req.body;
+
+    if (!name || !description || !type || !date) {
+      return res.status(400).json({ error: "Tous les champs sont requis." });
+    }
+
+    const event = await Event.findById(id);
+    if (!event) {
+      return res.status(404).json({ error: "Événement introuvable." });
+    }
+
+    if (event.owner._id.toString() !== req.user.id.toString()) {
+      return res.status(403).json({ error: "Non autorisé à modifier cet événement." });
+    }
+
+    event.name = name;
+    event.description = description;
+    event.type = type;
+    event.date = new Date(date);
+
+    await event.save();
+
+    res.status(200).json(event);
+  } catch (err) {
+    console.error("[updateEvent] error:", err);
+    res.status(500).json({ error: "Erreur serveur." });
+  }
+};
+
+exports.deleteEvent = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const event = await Event.findById(id);
+    if (!event) {
+      return res.status(404).json({ error: "Event not found" });
+    }
+
+    // Optionnel : Vérifie que seul le créateur peut supprimer
+    if (event.owner._id.toString() !== req.user.id.toString()) {
+      return res.status(403).json({ error: "Unauthorized" });
+    }
+
+    await Event.findByIdAndDelete(id);
+
+    // 2. Supprimer les chats liés à cet événement
+    await Chat.deleteMany({ eventId: id });
+
+    // 3. Supprimer les notifications liées à cet événement
+    await Notification.deleteMany({ event: event });
+
+    res.status(200).json({ message: "Event deleted successfully" });
+  } catch (err) {
+    console.error("[deleteEvent] error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
