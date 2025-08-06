@@ -49,7 +49,7 @@ exports.getNearbyEvents = async (req, res) => {
     // Trouver les events associés à ces locations
     const events = await Event.find({ location: { $in: locationIds } })
       .populate('location')
-      .populate('owner', 'username avatar')
+      .populate('owner', 'username avatarUrl')
       .sort({ date: 1 });
 
     res.json(events);
@@ -71,8 +71,8 @@ exports.getEventById = async (req, res) => {
   try {
     const event = await Event.findById(req.params.id)
       .populate('location') // si tu veux les infos du lieu
-      .populate('owner', 'username avatar')
-      .populate('attendees', 'username avatar');
+      .populate('owner', 'username avatarUrl')
+      .populate('attendees', 'username avatarUrl');
 
     if (!event) {
       return res.status(404).json({ error: "Événement introuvable" });
@@ -146,8 +146,8 @@ exports.getMyInvolvedEvents = async (req, res) => {
       ]
     })
       .populate("location")
-      .populate("attendees", "username avatar")
-      .populate("owner", "username avatar")
+      .populate("attendees", "username avatarUrl")
+      .populate("owner", "username avatarUrl")
       .sort({ date: 1 });
 
     res.json(events);

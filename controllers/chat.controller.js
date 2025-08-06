@@ -6,7 +6,7 @@ exports.getChatByEvent = async (req, res) => {
 
   try {
     const chat = await Chat.findOne({ eventId: eventId })
-      .populate("messages.sender", "username");
+      .populate("messages.sender", "username avatarUrl");
 
     if (!chat) return res.json({ messages: [] });
 

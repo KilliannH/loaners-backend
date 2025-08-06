@@ -2,8 +2,9 @@ const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-const JWT_EXPIRATION = process.env.JWT_EXPIRATION || '15m';
+const JWT_EXPIRATION = process.env.JWT_EXPIRATION || '24h';
 const REFRESH_EXPIRATION = process.env.REFRESH_EXPIRATION || '7d';
+const fallback_avatar_url = "https://i.ibb.co/F4hpLWyX/avatar-fallback.png";
 
 exports.signup = async (req, res) => {
   try {
@@ -12,7 +13,7 @@ exports.signup = async (req, res) => {
     if (exists) return res.status(400).json({ message: 'Email already in use' });
 
     const hashed = await bcrypt.hash(password, 10);
-    const user = await User.create({ username, email, password: hashed });
+    const user = await User.create({ username, email, password: hashed, fallback_avatar_url });
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
     res.status(201).json({ token, user });
@@ -66,7 +67,7 @@ const { refreshToken } = req.body;
     const newToken = jwt.sign(
       { userId },
       process.env.JWT_SECRET,
-      { expiresIn: '15m' }
+      { expiresIn: JWT_EXPIRATION }
     );
 
     res.json({ token: newToken });

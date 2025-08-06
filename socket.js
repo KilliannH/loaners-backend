@@ -62,19 +62,28 @@ function setupSocket(io) {
                     console.log("⚠️ Aucun user connecté identifié !");
                 }
                 for (const [socketId, userId] of connectedUsers.entries()) {
+                    // 🔍 Vérifie si le user est un participant ET n’est pas l’auteur
                     if (attendeeIds.includes(userId) && userId !== sender.toString()) {
+                        const socketsInRoom = await io.in(eventId).fetchSockets();
+                        const isInRoom = socketsInRoom.some((s) => connectedUsers.get(s.id) === userId);
+
+                        // ⚠️ Si l'utilisateur est déjà dans la room, on ne lui envoie pas de notif
+                        if (isInRoom) {
+                            console.log(`👁️ User ${userId} est déjà dans la salle ${eventId}, pas de notif.`);
+                            continue;
+                        }
+
                         console.log(`🔔 Notif à envoyer à user ${userId}`);
 
                         await Notification.create({
                             user: userId,
                             event: eventId,
                             content: text,
-                            type: "message"
+                            type: "message",
                         });
 
                         console.log(`💾 Notif DB créée pour ${userId}`);
 
-                        // 🔔 Envoie realtime
                         io.to(socketId).emit("message:notification", {
                             eventId,
                             from: senderUser?.username || "Inconnu",
