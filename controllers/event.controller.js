@@ -25,13 +25,12 @@ exports.createEvent = async (req, res) => {
 
 exports.getNearbyEvents = async (req, res) => {
   try {
-    const { lat, lng, radius = 10 } = req.query; // radius en km
+    const { lat, lng, radius = 10, limit = 15, offset = 0, type } = req.query;
 
     if (!lat || !lng) {
       return res.status(400).json({ message: 'Missing coordinates' });
     }
 
-    // Trouver les locations proches (dans le rayon en mètres)
     const locations = await Location.find({
       coordinates: {
         $near: {
@@ -46,13 +45,25 @@ exports.getNearbyEvents = async (req, res) => {
 
     const locationIds = locations.map(loc => loc._id);
 
-    // Trouver les events associés à ces locations
-    const events = await Event.find({ location: { $in: locationIds } })
+    const filter = {
+      location: { $in: locationIds },
+      ...(type && { type })
+    };
+
+    const total = await Event.countDocuments(filter); // 🔢 Total count
+
+    const events = await Event.find(filter)
       .populate('location')
       .populate('owner', 'username avatarUrl')
-      .sort({ date: 1 });
+      .sort({ date: 1 })
+      .skip(parseInt(offset))
+      .limit(parseInt(limit));
 
-    res.json(events);
+    res.json({
+      events,
+      total,
+      hasMore: parseInt(offset) + parseInt(limit) < total // ✅ front-friendly info
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
