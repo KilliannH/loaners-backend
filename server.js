@@ -30,6 +30,10 @@ app.use(cors());
 app.use(helmet());
 app.use(morgan("dev"));
 
+app.use("/api/debug", (req, res) => {
+  res.json({ path: req.path, headers: req.headers });
+});
+
 app.use("/api", require("./routes/index.routes"));
 
 app.get("/", (req, res) => {
