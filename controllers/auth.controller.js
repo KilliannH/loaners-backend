@@ -1,7 +1,9 @@
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const { OAuth2Client } = require("google-auth-library");
 
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const JWT_EXPIRATION = process.env.JWT_EXPIRATION || '24h';
 const REFRESH_EXPIRATION = process.env.REFRESH_EXPIRATION || '7d';
 const fallback_avatar_url = "https://i.ibb.co/vCM6YY9J/avatar-fallback.png";
@@ -52,6 +54,43 @@ exports.login = async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 };
+
+exports.googleSignup = async (req, res) => {
+  const { credential } = req.body;
+
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const { email, name, picture, sub } = payload;
+
+    // Vérifie si l'utilisateur existe
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      user = await User.create({
+        email,
+        username: name,
+        avatarUrl: picture,
+        googleId: sub,
+      });
+    }
+
+    const pyld = { userId: user._id };
+
+    // Génère access + refresh tokens
+    const token = jwt.sign(pyld, process.env.JWT_SECRET, { expiresIn: JWT_EXPIRATION });
+    const refreshToken = jwt.sign(pyld, process.env.REFRESH_SECRET, { expiresIn: REFRESH_EXPIRATION });
+
+    res.json({ user, token, refreshToken });
+  } catch (err) {
+    console.error(err);
+    res.status(401).json({ error: "Google authentication failed" });
+  }
+}
 
 exports.refresh = async (req, res) => {
 const { refreshToken } = req.body;
