@@ -2,7 +2,9 @@ const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { OAuth2Client } = require("google-auth-library");
+const loadBannedDomains = require("../utils/loadBannedDomains");
 
+const bannedDomains = loadBannedDomains();
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const JWT_EXPIRATION = process.env.JWT_EXPIRATION || '24h';
 const REFRESH_EXPIRATION = process.env.REFRESH_EXPIRATION || '7d';
@@ -11,12 +13,31 @@ const fallback_avatar_url = "https://i.ibb.co/vCM6YY9J/avatar-fallback.png";
 exports.signup = async (req, res) => {
   try {
     const { username, email, password } = req.body;
+
+    // 1. Vérifie si le domaine est dans la liste bannie
+    const domain = email.split("@")[1].toLowerCase();
+    if (bannedDomains.includes(domain)) {
+      return res.status(400).json({
+        message: "Email provider is not allowed. Please use a valid email address.",
+      });
+    }
+
+    // 2. Vérifie si l'email existe déjà
     const exists = await User.findOne({ email });
-    if (exists) return res.status(400).json({ message: 'Email already in use' });
+    if (exists) {
+      return res.status(400).json({ message: "Email already in use" });
+    }
 
+    // 3. Création du user
     const hashed = await bcrypt.hash(password, 10);
-    const user = await User.create({ username, email, password: hashed, fallback_avatar_url });
+    const user = await User.create({
+      username,
+      email,
+      password: hashed,
+      fallback_avatar_url,
+    });
 
+    // 4. JWT
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
     res.status(201).json({ token, user });
   } catch (err) {
@@ -93,7 +114,7 @@ exports.googleSignup = async (req, res) => {
 }
 
 exports.refresh = async (req, res) => {
-const { refreshToken } = req.body;
+  const { refreshToken } = req.body;
 
   if (!refreshToken) return res.status(400).json({ error: 'Missing refreshToken' });
 
