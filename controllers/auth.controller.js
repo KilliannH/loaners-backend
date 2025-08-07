@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 
 const JWT_EXPIRATION = process.env.JWT_EXPIRATION || '24h';
 const REFRESH_EXPIRATION = process.env.REFRESH_EXPIRATION || '7d';
-const fallback_avatar_url = "https://i.ibb.co/F4hpLWyX/avatar-fallback.png";
+const fallback_avatar_url = "https://i.ibb.co/vCM6YY9J/avatar-fallback.png";
 
 exports.signup = async (req, res) => {
   try {
