@@ -19,6 +19,8 @@ const io = new Server(server, {
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   },
+  pingInterval: 10000,
+  pingTimeout: 5000
 });
 
 setupSocket(io); // 🧠 branche les sockets
