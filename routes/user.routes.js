@@ -7,4 +7,8 @@ router.get('/me', authMiddleware, getMe);
 router.put('/me', authMiddleware, updateProfile);
 router.get('/:id', authMiddleware, getById);
 
+router.get("/test", (req, res) => {
+  res.send("🧪 Route test OK");
+});
+
 module.exports = router;
