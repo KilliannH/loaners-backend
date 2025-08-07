@@ -11,29 +11,6 @@ const connectDB = require("./config/db");
 dotenv.config();
 connectDB();
 
-function listRoutes(app) {
-  const routes = [];
-
-  app._router.stack.forEach((middleware) => {
-    if (middleware.route) {
-      // Route simple
-      routes.push(middleware.route);
-    } else if (middleware.name === "router") {
-      // Router imbriqué
-      middleware.handle.stack.forEach((handler) => {
-        const route = handler.route;
-        route && routes.push(route);
-      });
-    }
-  });
-
-  console.log("📦 Routes enregistrées :");
-  routes.forEach((r) => {
-    const methods = Object.keys(r.methods).join(", ").toUpperCase();
-    console.log(`${methods} ${r.path}`);
-  });
-}
-
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -54,7 +31,6 @@ app.use(helmet());
 app.use(morgan("dev"));
 
 app.use("/api", require("./routes/index.routes"));
-listRoutes(app);
 
 app.get("/", (req, res) => {
   res.send("Loners API is running");
