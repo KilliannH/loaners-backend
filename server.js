@@ -13,20 +13,32 @@ connectDB();
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, {
+
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://loners.net"
+];
+
+const io = new Server(httpServer, {
   cors: {
-    origin: "https://loners.net", // ⚠️ à restreindre en prod
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    origin: allowedOrigins,
+    methods: ["GET", "POST"],
     credentials: true,
   },
   pingInterval: 10000,
-  pingTimeout: 5000
+  pingTimeout: 5000,
 });
 
 setupSocket(io); // 🧠 branche les sockets
 
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    callback(new Error("Not allowed by CORS"));
+  },
+  credentials: true,
+}));
 app.use(helmet());
 app.use(morgan("dev"));
 
