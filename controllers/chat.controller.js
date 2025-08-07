@@ -12,7 +12,6 @@ exports.getChatByEvent = async (req, res) => {
 
     res.json({ messages: chat.messages });
   } catch (err) {
-    console.error("Erreur get chat:", err);
     res.status(500).json({ error: "Erreur serveur" });
   }
 };
@@ -27,7 +26,6 @@ exports.getUserChatRooms = async (req, res) => {
 
     res.json(events);
   } catch (err) {
-    console.error("[getUserChatRooms] error:", err);
     res.status(500).json({ error: "Erreur serveur." });
   }
 };
