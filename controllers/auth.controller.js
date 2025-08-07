@@ -14,11 +14,10 @@ exports.signup = async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
-    // 1. Vérifie si le domaine est dans la liste bannie
-    const domain = email.split("@")[1].toLowerCase();
+    const domain = email.split("@")[1]?.toLowerCase();
     if (bannedDomains.includes(domain)) {
       return res.status(400).json({
-        message: "Email provider is not allowed. Please use a valid email address.",
+        message: "Email provider is not allowed.",
       });
     }
 
@@ -93,6 +92,8 @@ exports.googleSignup = async (req, res) => {
 
     if (!user) {
       user = await User.create({
+        emailVerified: true,
+        emailVerificationToken: undefined,
         email,
         username: name,
         avatarUrl: picture,
