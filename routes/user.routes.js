@@ -4,7 +4,7 @@ const { getMe, getById, updateProfile } = require('../controllers/user.controlle
 const { authMiddleware } = require('../middleware/auth.middleware');
 
 router.get('/me', authMiddleware, getMe);
-router.get('/:id', authMiddleware, getById);
 router.put('/me', authMiddleware, updateProfile);
+router.get('/:id', authMiddleware, getById);
 
 module.exports = router;
