@@ -22,7 +22,6 @@ exports.createLocation = async (req, res) => {
 
     res.status(201).json(location);
   } catch (err) {
-    console.error("[createLocation] error:", err);
     res.status(500).json({ error: "Erreur serveur." });
   }
 };
@@ -41,7 +40,6 @@ exports.searchLocations = async (req, res) => {
 
     res.json(results);
   } catch (err) {
-    console.error('[searchLocations] error:', err);
     res.status(500).json({ error: 'Erreur serveur.' });
   }
 };

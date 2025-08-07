@@ -86,7 +86,6 @@ exports.verifyEmail = async (req, res) => {
 
     return res.status(200).json({ success: true, message: "Email verified" });
   } catch (err) {
-    console.error("verifyEmail error:", err);
     res.status(500).json({ success: false, message: "Server error during email verification." });
   }
 };
@@ -143,7 +142,6 @@ exports.login = async (req, res) => {
     res.json({ user, token, refreshToken });
 
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: 'Server error' });
   }
 };
@@ -182,7 +180,6 @@ exports.googleSignup = async (req, res) => {
 
     res.json({ user, token, refreshToken });
   } catch (err) {
-    console.error(err);
     res.status(401).json({ error: "Google authentication failed" });
   }
 }
@@ -206,7 +203,6 @@ exports.refresh = async (req, res) => {
 
     res.json({ token: newToken });
   } catch (err) {
-    console.error('Refresh token error:', err);
     return res.status(401).json({ error: 'Invalid or expired refresh token' });
   }
 }

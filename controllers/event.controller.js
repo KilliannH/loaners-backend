@@ -98,7 +98,6 @@ exports.getEventById = async (req, res) => {
 
     res.json(event);
   } catch (err) {
-    console.error("Erreur getEventById:", err);
     res.status(500).json({ error: "Erreur serveur" });
   }
 };
@@ -124,7 +123,6 @@ exports.joinEvent = async (req, res) => {
 
     res.json({ success: true });
   } catch (err) {
-    console.error("Erreur joinEvent:", err);
     res.status(500).json({ error: "Erreur serveur" });
   }
 };
@@ -148,7 +146,6 @@ exports.leaveEvent = async (req, res) => {
 
     res.json({ success: true });
   } catch (err) {
-    console.error("Erreur leaveEvent:", err);
     res.status(500).json({ error: "Erreur serveur" });
   }
 };
@@ -170,7 +167,6 @@ exports.getMyInvolvedEvents = async (req, res) => {
 
     res.json(events);
   } catch (err) {
-    console.error("Erreur getMyInvolvedEvents:", err);
     res.status(500).json({ error: "Erreur serveur" });
   }
 };
@@ -202,7 +198,6 @@ exports.updateEvent = async (req, res) => {
 
     res.status(200).json(event);
   } catch (err) {
-    console.error("[updateEvent] error:", err);
     res.status(500).json({ error: "Erreur serveur." });
   }
 };
@@ -231,7 +226,6 @@ exports.deleteEvent = async (req, res) => {
 
     res.status(200).json({ message: "Event deleted successfully" });
   } catch (err) {
-    console.error("[deleteEvent] error:", err);
     res.status(500).json({ error: "Server error" });
   }
 };
