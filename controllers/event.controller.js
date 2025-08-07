@@ -5,6 +5,13 @@ const Location = require('../models/Location');
 
 exports.createEvent = async (req, res) => {
   try {
+    const now = new Date();
+    const eventDate = new Date(req.body.date);
+
+    if (eventDate < now) {
+      return res.status(400).json({ error: "La date de l'événement ne peut pas être dans le passé." });
+    }
+
     const { name, description, type, date, locationId } = req.body;
 
     const event = await Event.create({
