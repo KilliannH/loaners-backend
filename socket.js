@@ -6,23 +6,19 @@ const Event = require("./models/Event");
 function setupSocket(io) {
     const connectedUsers = new Map();
     io.on("connection", (socket) => {
-        console.log("🟢 Nouveau client connecté :", socket.id);
 
         socket.on("identify", (userId) => {
             connectedUsers.set(socket.id, userId);
-            console.log(`✅ Socket ${socket.id} identifié comme user ${userId}`);
         });
 
         // Rejoindre une salle par eventId
         socket.on("join", (eventId) => {
             socket.join(eventId);
-            console.log(`👥 ${socket.id} a rejoint le chat de l'événement ${eventId}`);
         });
 
         // Quitter la salle
         socket.on("leave", (eventId) => {
             socket.leave(eventId);
-            console.log(`🚪 ${socket.id} a quitté ${eventId}`);
         });
 
         // Envoi d’un message
@@ -54,13 +50,9 @@ function setupSocket(io) {
 
                 // ❌ Si l’utilisateur n’est pas dans la liste des participants : refuser
                 if (!attendeeIds.includes(sender.toString())) {
-                    console.log(`⛔️ Refusé : user ${sender} tente d’écrire sans être inscrit à l’event ${eventId}`);
                     return;
                 }
 
-                if (connectedUsers.size === 0) {
-                    console.log("⚠️ Aucun user connecté identifié !");
-                }
                 for (const [socketId, userId] of connectedUsers.entries()) {
                     // 🔍 Vérifie si le user est un participant ET n’est pas l’auteur
                     if (attendeeIds.includes(userId) && userId !== sender.toString()) {
@@ -69,11 +61,8 @@ function setupSocket(io) {
 
                         // ⚠️ Si l'utilisateur est déjà dans la room, on ne lui envoie pas de notif
                         if (isInRoom) {
-                            console.log(`👁️ User ${userId} est déjà dans la salle ${eventId}, pas de notif.`);
                             continue;
                         }
-
-                        console.log(`🔔 Notif à envoyer à user ${userId}`);
 
                         await Notification.create({
                             user: userId,
@@ -81,8 +70,6 @@ function setupSocket(io) {
                             content: text,
                             type: "message",
                         });
-
-                        console.log(`💾 Notif DB créée pour ${userId}`);
 
                         io.to(socketId).emit("message:notification", {
                             eventId,
@@ -98,7 +85,6 @@ function setupSocket(io) {
 
         socket.on("disconnect", () => {
             connectedUsers.delete(socket.id);
-            console.log("🔴 Client déconnecté :", socket.id);
         });
     });
 }
